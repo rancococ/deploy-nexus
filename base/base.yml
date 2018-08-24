@@ -1,0 +1,32 @@
+##########################################################################
+# 部署配置文件(base)
+# 本配置文件(xx.yml)中的变量(${xxx})是从同级目录下的.env文件中读取的
+##########################################################################
+# compose支持的版本2
+version: "2"
+services:
+  # nexus
+  nexus:
+    image: ${IMAGE_NEXUS}
+    container_name: "nexus.${GROUP_NAME}.${PRODUCT_NAME}.${COMPANY_NAME}"
+    hostname: "nexus.${GROUP_NAME}.${PRODUCT_NAME}.${COMPANY_NAME}"
+    restart: "always"
+    environment:
+      - INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=3g -Djava.util.prefs.userRoot=/nexus-pref
+      - NEXUS_CONTEXT=nexus
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./volume/nexus/data:/nexus-data:rw
+      - ./volume/nexus/pref:/nexus-pref:rw
+    ports:
+      - "8081:8081"
+    networks:
+      mynet:
+        ipv4_address: 172.16.100.10
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.100.0/24"
