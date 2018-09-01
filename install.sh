@@ -67,31 +67,77 @@ base_dir="$( cd -P "$( dirname "$source" )" && pwd )"
 cd ${base_dir}
 
 ##########################################################################
-# result code
-re_err=1
-re_ok=0
+# args
+arg_help=
+arg_update=
+arg_compose=
+
+##########################################################################
+# parse parameter
+# echo $@
+# 定义选项， -o 表示短选项 -a 表示支持长选项的简单模式(以 - 开头) -l 表示长选项 
+# a 后没有冒号，表示没有参数
+# b 后跟一个冒号，表示有一个必要参数
+# c 后跟两个冒号，表示有一个可选参数(可选参数必须紧贴选项)
+# -n 出错时的信息
+# -- 也是一个选项，比如 要创建一个名字为 -f 的目录，会使用 mkdir -- -f ,
+#    在这里用做表示最后一个选项(用以判定 while 的结束)
+# $@ 从命令行取出参数列表(不能用用 $* 代替，因为 $* 将所有的参数解释成一个字符串
+#                         而 $@ 是一个参数数组)
+# args=`getopt -o ab:c:: -a -l apple,banana:,cherry:: -n "${source}" -- "$@"`
+args=`getopt -o huc -a -l help,update,compose -n "${source}" -- "$@"`
+# 判定 getopt 的执行时候有错，错误信息输出到 STDERR
+if [ $? != 0 ]; then
+    echo "Terminating..." >&2
+    exit 1
+fi
+# echo ${args}
+# 重新排列参数的顺序
+# 使用eval 的目的是为了防止参数中有shell命令，被错误的扩展。
+eval set -- "${args}"
+# 处理具体的选项
+while true
+do
+    case "$1" in
+        -h | --help | -help)
+            echo "option -h|--help"
+            arg_help=true
+            shift
+            ;;
+        -u | --update | -update)
+            echo "option -u|--update"
+            arg_update=true
+            shift
+            ;;
+        -c | --compose | -compose)
+            echo "option -c|--compose"
+            arg_compose=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Internal error!"
+            exit 1
+            ;;
+    esac
+done
+#显示除选项外的参数(不包含选项的参数都会排到最后)
+# arg 是 getopt 内置的变量 , 里面的值，就是处理过之后的 $@(命令行传入的参数)
+for arg do
+   echo '--> '"$arg";
+done
 
 # show usage
 fun_usage() {
-    fun_echo_yellow "Usage: `basename $0` [-l] [-h]"
-    fun_echo_yellow "        [-l]          : load images from local tar archive file, default is false/empty."
-    exit $re_err
+    fun_echo_yellow "Usage: `basename $0` [-h|--help] [-u|--update] [-c|--compose]"
+    fun_echo_yellow "        [-h|--help]          : show help info."
+    fun_echo_yellow "        [-u|--update]        : install packages."
+    fun_echo_yellow "        [-c|--compose]       : install docker compose."
+    return 0
 }
-# get option param
-while getopts lh option
-do
-    case $option in
-    l)
-        image_local=true
-        ;;
-    h)
-        fun_usage
-        ;;
-    \?)
-        fun_usage
-        ;;
-    esac
-done
 
 # fun_log_echo
 fun_log_echo() {
@@ -100,7 +146,7 @@ fun_log_echo() {
     l_time=`date "+%Y-%m-%d %H:%M:%S"`
     #echo "[$l_time]:[$l_bs]:$l_arg" >> "$LOG_FILE_NAME"
     fun_echo_green "$l_arg"
-    return $re_ok
+    return 0
 }
 
 # update hosts for github and amazonaws
@@ -133,7 +179,7 @@ fun_update_hosts() {
 52.216.100.19 github-production-release-asset-2e65be.s3.amazonaws.com
 52.216.230.163 github-production-release-asset-2e65be.s3.amazonaws.com
 EOF
-    return $re_ok
+    return 0
 }
 
 # install repositories and packages
@@ -161,9 +207,10 @@ fun_install_packages() {
     rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-DOCKER-CE
     fun_log_echo ""
     fun_log_echo "\>\>\>install packages for passwd openssl wget net-tools gettext zip unzip"
+    yum update -y && \
     yum install -y passwd openssl wget net-tools gettext zip unzip && \
     yum clean all
-    return $re_ok
+    return 0
 }
 
 # install docker-compose
@@ -171,19 +218,31 @@ fun_install_compose() {
     fun_log_echo "\>\>\>install docker-compose from ${compose_url}"
     curl -L -o /usr/local/bin/docker-compose "${compose_url}" && \
     chmod +x /usr/local/bin/docker-compose
-    return $re_ok
+    return 0
 }
 
-
 ##########################################################################
+
+# show usage
+if [ "x${arg_help}" == "xtrue" ]; then
+    fun_usage;
+    exit 1
+fi
+
 # update hosts for github and amazonaws
 fun_update_hosts
 
 # install packages
-fun_install_packages
+if [ "x${arg_update}" == "xtrue" ]; then
+    fun_install_packages;
+    exit 1
+fi
 
 # install docker-compose
-fun_install_compose
+if [ "x${arg_compose}" == "xtrue" ]; then
+    fun_install_compose;
+    exit 1
+fi
 
 fun_log_echo "complete."
 fun_log_echo ""
