@@ -28,8 +28,7 @@ BASE_DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd  )"
 cd ${BASE_DIR}
 
 # set docker compose info
-#COMPOSE_BIN=/usr/local/bin/docker-compose
-COMPOSE_BIN=${BASE_DIR}/tools/docker-compose
+COMPOSE_BIN=/usr/local/bin/docker-compose
 COMPOSE_YML=${BASE_DIR}/base.yml
 PROJECT_DIR=${BASE_DIR}
 PROJECT_NAME=base
