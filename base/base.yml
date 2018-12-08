@@ -18,6 +18,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./volume/nexus/data:/nexus-data:rw
       - ./volume/nexus/pref:/nexus-pref:rw
+      - ./volume/nexus/back:/nexus-back:rw
     ports:
       - "8081:8081"
     networks:

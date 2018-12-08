@@ -109,6 +109,7 @@ fun_deploy_images() {
     chmod +x ${base_dir}/*/*.sh
     chmod 777 ${base_dir}/base/volume/nexus/data
     chmod 777 ${base_dir}/base/volume/nexus/pref
+    chmod 777 ${base_dir}/base/volume/nexus/back
     return $re_ok
 }
 
