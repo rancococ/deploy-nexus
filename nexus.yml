@@ -8,8 +8,8 @@ services:
   # nexus
   nexus:
     image: ${IMAGE_NEXUS}
-    container_name: "nexus.${GROUP_NAME}.${PRODUCT_NAME}.${COMPANY_NAME}"
-    hostname: "nexus.${GROUP_NAME}.${PRODUCT_NAME}.${COMPANY_NAME}"
+    container_name: "nexus.${PRODUCT_NAME}.${COMPANY_NAME}"
+    hostname: "nexus.${PRODUCT_NAME}.${COMPANY_NAME}"
     restart: "always"
     environment:
       - INSTALL4J_ADD_VM_PARAMS=-Xms2g -Xmx2g -XX:MaxDirectMemorySize=3g -Djava.util.prefs.userRoot=/nexus-pref
