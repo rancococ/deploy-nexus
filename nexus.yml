@@ -19,6 +19,8 @@ services:
       - ./volume/nexus/data:/nexus-data:rw
       - ./volume/nexus/pref:/nexus-pref:rw
       - ./volume/nexus/back:/nexus-back:rw
+    extra_hosts:
+      - "nexus.${PRODUCT_NAME}.${COMPANY_NAME}:172.16.100.10"
     ports:
       - "8081:8081"
     networks:
